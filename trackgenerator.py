@@ -74,6 +74,8 @@ class TrackGenerator(object):
 	
 	def _increment(self):
 		self.__flux_index += 1
+		#debug
+		print(self.__flux_index)
 		return self.__flux_index
 	
 	

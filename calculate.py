@@ -13,8 +13,8 @@ from trackgenerator import TrackGenerator
 PLOT = True
 MAXITER = 100
 EPS = 1E-3      # Convergence criterion  # TODO: Change back to 1E-5
-N_AZIM_2 = 6    # number of azimuthal angle pairs
-D_AZIM = 0.5    # target spacing between parallel tracks (cm)
+N_AZIM_2 = 12    # number of azimuthal angle pairs
+D_AZIM = 0.25    # target spacing between parallel tracks (cm)
 QFSR = 1.0      # flat fixed source magnitude
 
 
@@ -167,7 +167,7 @@ class Calculator(object):
 		
 		
 
-for sigma_a in cell.SIGMA_AS[0:1]:
+for sigma_a in cell.SIGMA_AS[0:2]:
 	cell0 = cell.Cell(cell.PITCH, cell.RADIUS,
 	                  cell.SIGMA_NF, sigma_a, plot = PLOT)
 	trackgen = TrackGenerator(cell0, N_AZIM_2, D_AZIM)
