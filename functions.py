@@ -49,3 +49,29 @@ def l2norm_2d(new_psi, old_psi):
 			fluxdiff += (new_psi[j, i] - old_psi[j, i])**2
 	fluxdiff = math.sqrt(fluxdiff/nx*ny)
 	return fluxdiff
+
+
+def is_used(val, used_set):
+	"""Check whether a value is used in a set, within tolerance
+	
+	Parameters:
+	-----------
+	val:        float; value to check for
+	used_set:   Iterable of floats; values to check in.
+	
+	Returns:
+	--------
+	Boolean; whether val is in used_set, within tolerance
+	"""
+	for u in used_set:
+		if math.isclose(val, u):
+			return True
+	return False
+
+def any_used(vals, used_set):
+	"""Check whether any values from a set are used in another set"""
+	for val in vals:
+		if is_used(val, used_set):
+			return True
+	return False
+
