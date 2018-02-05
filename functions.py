@@ -67,11 +67,3 @@ def is_used(val, used_set):
 		if math.isclose(val, u):
 			return True
 	return False
-
-def any_used(vals, used_set):
-	"""Check whether any values from a set are used in another set"""
-	for val in vals:
-		if is_used(val, used_set):
-			return True
-	return False
-

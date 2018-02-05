@@ -233,17 +233,15 @@ class TrackGenerator(object):
 		d = 1
 		count = 1
 		yleft = set()
-		yright = set()
 		while True:
 			x = old_track.x1
 			y = old_track.y1
-			if pylab.isclose(x, self.cell.xmin):
-				yleft.add(round(y, 5))
-			elif pylab.isclose(x, self.cell.xmax):
-				yright.add(round(y, 5))
 			if pylab.isclose(x, track0.x0) and pylab.isclose(y, track0.y0):
 				# then we're back where we started
 				break
+			elif pylab.isclose(x, self.cell.xmin):
+				# then this hits a new y-ordinate
+				yleft.add(round(y, 5))
 			# Reflection logic
 			if y == self.cell.ymax:
 				d = -1
@@ -265,7 +263,7 @@ class TrackGenerator(object):
 		track.index1 = track0.index0
 		track.next_track = track0
 		track0.last_track = track
-		return count, yleft, yright
+		return count, yleft
 	
 	def generate(self):
 		"""Actually live up to its name and make the tracks"""
@@ -276,38 +274,32 @@ class TrackGenerator(object):
 			
 			count0 = 0
 			yused_xmin = set()
-			yused_xmax = set()
 			nxy = 2*(self.nxs[a] + self.nys[a])
+			x00 = self.cell.xmin
 			
 			for n in range(ny):
-				for x00, yused in zip((self.cell.xmin, self.cell.xmax), (yused_xmin, yused_xmax)):
-					y00 = self.cell.ymax - (0.5 + n)*dy
-					if not is_used(y00, yused) and count0 < nxy and x00==self.cell.xmin:
-						b = 0
-						phi = self.phis[b, a]
-						if True:
-							print("X00: {:.2f}\tY00: {:.2f}\tphi: {}".format(x00, y00, round(deg(phi))))
-						track00 = self._track_by_quadrant(x00, y00, phi, a)
-						track00.index0 = self._increment()
-						self._add_track_to_dict(track00)
-						count1, ynewmin, ynewmax = self._cycle_track(track00, a, b)
-						count0 += count1
-						yused_xmin.update(ynewmin)
-						yused_xmax.update(ynewmax)
+				y00 = self.cell.ymax - (0.5 + n)*dy
+				if not is_used(y00, yused_xmin) and count0 < nxy:
+					b = 0
+					phi = self.phis[b, a]
+					if True:
+						print("X00: {:.2f}\tY00: {:.2f}\tphi: {}".format(x00, y00, round(deg(phi))))
+					track00 = self._track_by_quadrant(x00, y00, phi, a)
+					track00.index0 = self._increment()
+					self._add_track_to_dict(track00)
+					count1, ynew = self._cycle_track(track00, a, b)
+					count0 += count1
+					yused_xmin.update(ynew)
 				
-			# Sometimes I get exactly 2 two many tracks on one angle.
-			# I don't know why.
-			if count0 > nxy:
-				warn("Possibly too many tracks ({} out of {})".format(count0, nxy))
-			elif count0 < nxy:
-				warn("Possibly too few tracks ({} out of {})".format(count0, nxy))
+			if count0 != nxy:
+				warn("Wrong number of tracks ({} out of {})".format(count0, nxy))
 			
 		print("...done.\n")
 
 					
 if __name__ == "__main__":
 	# test
-	t = TrackGenerator(cell.test_cell, 120, dtarget = .1)
+	t = TrackGenerator(cell.test_cell, 12, dtarget = .25)
 	t.generate()
 	if not DEBUG:
 		pylab.show()
