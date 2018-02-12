@@ -12,9 +12,9 @@ from trackgenerator import TrackGenerator
 # Global constants
 PLOT = True
 MAXITER = 100
-EPS = 1E-3      # Convergence criterion  # TODO: Change back to 1E-5
-N_AZIM_2 = 12    # number of azimuthal angle pairs
-D_AZIM = 0.25    # target spacing between parallel tracks (cm)
+EPS = 1E-5      # Convergence criterion  # TODO: Change back to 1E-5
+N_AZIM_2 = 12   # number of azimuthal angle pairs
+D_AZIM = 0.25   # target spacing between parallel tracks (cm)
 QFSR = 1.0      # flat fixed source magnitude
 
 
@@ -33,11 +33,11 @@ class Calculator(object):
 	
 	Attributes:
 	-----------
-	psi:            numpy.array; angular flux, size = (np, nxy)
-						psi[:,p]: flux vector for polar angle p
-						psi[i,p]: angular flux at node i for angle p
-	nxy:            int; the number of nodes on the x and y boundaries.
-						Serves as the length of psi[:,p]
+	psi:            numpy.array; angular flux, size = (np, ntotal)
+						psi[p,:]: flux vector for polar angle p
+						psi[p,i]: angular flux at node i for angle p
+	ntotal:         int; the number of nodes on the x and y boundaries.
+						Serves as the length of psi[p,:]
 	modr_flux:      float; scalar flux in the moderator
 	fuel_flux:      float; scalar flux in the fuel
 	
@@ -55,7 +55,7 @@ class Calculator(object):
 		self.source = source
 		self.eps = eps
 		self.plot = plot
-		self.psi = numpy.zeros((self.quad.np, 4*self.generator.nazim))
+		self.psi = numpy.zeros((self.quad.np, self.generator.ntotal))
 		self.modr_flux = -1.0
 		self.fuel_flux = -1.0
 		
@@ -82,8 +82,7 @@ class Calculator(object):
 		while diff > EPS:
 		#while count < 10:    # restore the 'while' loop
 			# Reset the fluxes before sweeping
-			psi_old = numpy.empty(self.psi.shape)
-			psi_old[:,:] = self.psi
+			psi_old = numpy.array(self.psi)
 			fuel_flux = QFSR/sig_fuel
 			modr_flux = 0.0  # No source in fuel
 			for a in range(self.quad.na):
@@ -159,15 +158,16 @@ class Calculator(object):
 		
 		print("Converged after", count, "iterations.")
 		#print(self.psi)
-		print(self.psi[0,:] + self.psi[1,:] + self.psi[2,:])
-		print("Flux in fuel: {}\tFlux in mod: {}".format(self.fuel_flux, self.modr_flux))
+		print(self.psi.sum(axis=0))
+		print("Flux in fuel: {}\tFlux in mod: {}\tRatio: {}".format(
+			self.fuel_flux, self.modr_flux, self.fuel_flux/self.modr_flux))
 		return True, diff
 				
 		
 		
 		
 
-for sigma_a in cell.SIGMA_AS[0:2]:
+for sigma_a in cell.SIGMA_AS[1:2]:
 	cell0 = cell.Cell(cell.PITCH, cell.RADIUS,
 	                  cell.SIGMA_NF, sigma_a, plot = PLOT)
 	trackgen = TrackGenerator(cell0, N_AZIM_2, D_AZIM)
