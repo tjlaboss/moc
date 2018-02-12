@@ -24,6 +24,7 @@ class TrackGenerator(object):
 	Attributes:
 	-----------
 	many, to be described
+	nxy:            int; total number of nodes on x and y edges
 	"""
 	def __init__(self, cell_, nazim, dtarget):
 		self.cell = cell_
@@ -58,9 +59,10 @@ class TrackGenerator(object):
 			self.dxs[i] = delta_x/self.nxs[i]
 			self.dys[i] = delta_y/self.nys[i]
 			self.dazim[i] = self.dxs[i]*math.sin(phi_eff)
+		self.nxy = 2*(self.nxs.sum() + self.nys.sum())
 		
 		#print("Angles:", [round(deg(ang)) for ang in self.phis])
-		self._tracks = []  # TODO: Initialize as list of the right length
+		self._tracks = []
 		# Integrate nxs, nys
 		for i in range(1, n):
 			self.integral_nxs[i] = self.nxs[:i].sum()
@@ -276,12 +278,11 @@ class TrackGenerator(object):
 			
 			count0 = 0
 			yused_xmin = set()
-			nxy = 2*(self.nxs[a] + self.nys[a])
 			x00 = self.cell.xmin
 			
 			for n in range(ny):
 				y00 = self.cell.ymax - (0.5 + n)*dy
-				if not is_used(y00, yused_xmin) and count0 < nxy:
+				if not is_used(y00, yused_xmin) and count0 < self.nxy:
 					b = 0
 					phi = self.phis[b, a]
 					if True:
@@ -293,8 +294,8 @@ class TrackGenerator(object):
 					count0 += count1
 					yused_xmin.update(ynew)
 				
-			if count0 != nxy:
-				warn("Wrong number of tracks ({} out of {})".format(count0, nxy))
+			if count0 != self.nxy:
+				warn("Wrong number of tracks ({} out of {})".format(count0, self.nxy))
 			
 		print("...done.\n")
 

@@ -13,8 +13,8 @@ from trackgenerator import TrackGenerator
 PLOT = True
 MAXITER = 100
 EPS = 1E-3      # Convergence criterion  # TODO: Change back to 1E-5
-N_AZIM_2 = 12    # number of azimuthal angle pairs
-D_AZIM = 0.25    # target spacing between parallel tracks (cm)
+N_AZIM_2 = 12   # number of azimuthal angle pairs
+D_AZIM = 0.25   # target spacing between parallel tracks (cm)
 QFSR = 1.0      # flat fixed source magnitude
 
 
@@ -34,10 +34,10 @@ class Calculator(object):
 	Attributes:
 	-----------
 	psi:            numpy.array; angular flux, size = (np, nxy)
-						psi[:,p]: flux vector for polar angle p
-						psi[i,p]: angular flux at node i for angle p
+						psi[p,:]: flux vector for polar angle p
+						psi[p,i]: angular flux at node i for angle p
 	nxy:            int; the number of nodes on the x and y boundaries.
-						Serves as the length of psi[:,p]
+						Serves as the length of psi[p,:]
 	modr_flux:      float; scalar flux in the moderator
 	fuel_flux:      float; scalar flux in the fuel
 	
@@ -55,7 +55,7 @@ class Calculator(object):
 		self.source = source
 		self.eps = eps
 		self.plot = plot
-		self.psi = numpy.zeros((self.quad.np, 4*self.generator.nazim))
+		self.psi = numpy.zeros((self.quad.np, self.generator.nxy))
 		self.modr_flux = -1.0
 		self.fuel_flux = -1.0
 		
