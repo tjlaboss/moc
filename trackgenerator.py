@@ -24,7 +24,7 @@ class TrackGenerator(object):
 	Attributes:
 	-----------
 	many, to be described
-	nxy:            int; total number of nodes on x and y edges
+	ntotal:            int; total number of nodes on x and y edges
 	"""
 	def __init__(self, cell_, nazim, dtarget):
 		self.cell = cell_
@@ -59,7 +59,7 @@ class TrackGenerator(object):
 			self.dxs[i] = delta_x/self.nxs[i]
 			self.dys[i] = delta_y/self.nys[i]
 			self.dazim[i] = self.dxs[i]*math.sin(phi_eff)
-		self.nxy = 2*(self.nxs.sum() + self.nys.sum())
+		self.ntotal = 2 * (self.nxs.sum() + self.nys.sum())
 		
 		#print("Angles:", [round(deg(ang)) for ang in self.phis])
 		self._tracks = []
@@ -76,8 +76,6 @@ class TrackGenerator(object):
 	
 	def _increment(self):
 		self.__flux_index += 1
-		#debug
-		print(self.__flux_index)
 		return self.__flux_index
 	
 	
@@ -268,21 +266,22 @@ class TrackGenerator(object):
 		track.next_track = track0
 		track0.last_track = track
 		return count, yleft
-	
+
 	def generate(self):
 		"""Actually live up to its name and make the tracks"""
 		print("Generating tracks...")
-		for a in range(self.nazim//2):
+		for a in range(self.nazim // 2):
 			dy = self.dys[a]
 			ny = self.nys[a]
-			
+
 			count0 = 0
 			yused_xmin = set()
+			nxy = 2 * (self.nxs[a] + self.nys[a])
 			x00 = self.cell.xmin
-			
+
 			for n in range(ny):
-				y00 = self.cell.ymax - (0.5 + n)*dy
-				if not is_used(y00, yused_xmin) and count0 < self.nxy:
+				y00 = self.cell.ymax - (0.5 + n) * dy
+				if not is_used(y00, yused_xmin) and count0 < nxy:
 					b = 0
 					phi = self.phis[b, a]
 					if True:
@@ -293,10 +292,10 @@ class TrackGenerator(object):
 					count1, ynew = self._cycle_track(track00, a, b)
 					count0 += count1
 					yused_xmin.update(ynew)
-				
-			if count0 != self.nxy:
-				warn("Wrong number of tracks ({} out of {})".format(count0, self.nxy))
-			
+
+			if count0 != nxy:
+				warn("Wrong number of tracks ({} out of {})".format(count0, nxy))
+
 		print("...done.\n")
 
 					
