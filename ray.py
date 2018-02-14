@@ -4,7 +4,7 @@
 
 import warnings
 from functions import octant
-from pylab import *
+from pylab import sqrt, sin, cos, tan
 from decimal import Decimal
 
 D = 4   # Number of decimal places to round to
@@ -62,7 +62,6 @@ class Ray(object):
 		self.comp = None
 		self.x1, self.y1 = self.get_edge_coordinates()
 		if self.x1 is not None and self.y1 is not None:
-			# print("x1: {:.3}, y1: {:.3}".format(self.x1, self.y1))
 			self.length = sqrt((self.x1 - self.x0)**2 +
 			                   (self.y1 - self.y0)**2)
 		else:
@@ -131,13 +130,11 @@ class Ray(object):
 				# check if it hits the x or y edge first
 				if dy/w > dx:
 					# then it hits the right edge first
-					#print("left edge -> right edge")
 					x1 = self.pin.xmax
 					y1 = self.y0 + dx*w
 					return x1, y1
 				else:
 					# then it hits the top first
-					#print("left edge -> top edge")
 					x1 = self.x0 + dy/w
 					y1 = self.pin.ymax
 					return x1, y1
@@ -146,13 +143,11 @@ class Ray(object):
 				dy = self.y0 - self.pin.ymin
 				if dy/w > dx:
 					# then it hits the right edge first
-					#print("left edge -> right edge")
 					x1 = self.pin.xmax
 					y1 = self.y0 - dx*w
 					return x1, y1
 				else:
 					# then it hits the bottom edge first
-					#print("left edge -> bottom edge")
 					x1 = self.x0 + dy/w
 					y1 = self.pin.ymin
 					return x1, y1
@@ -166,13 +161,11 @@ class Ray(object):
 				# check if it hits the x or y edge first
 				if dy/w > dx:
 					# then it hits the right edge first
-					#print("right edge -> left edge")
 					x1 = self.pin.xmin
 					y1 = self.y0 + dx*w
 					return x1, y1
 				else:
 					# then it hits the top first
-					#print("right edge -> top edge")
 					x1 = self.x0 - dy/w
 					y1 = self.pin.ymax
 					return x1, y1
@@ -181,13 +174,11 @@ class Ray(object):
 				dy = self.y0 - self.pin.ymin
 				if dy/w > dx:
 					# then it hits the left edge first
-					#print("right edge -> left edge")
 					x1 = self.pin.xmin
 					y1 = self.y0 - dx*w
 					return x1, y1
 				else:
 					# then it hits the bottom edge first
-					#print("right edge -> bottom edge")
 					x1 = self.x0 - dy/w
 					y1 = self.pin.ymin
 					return x1, y1
@@ -201,13 +192,11 @@ class Ray(object):
 				# check if it hits the x or y edge first
 				if dx*w > dy:
 					# then it hits the bottom first
-					#print("top edge -> bottom edge")
 					x1 = self.x0 - dy/w
 					y1 = self.pin.ymin
 					return x1, y1
 				else:
 					# then it hits the left first
-					#print("top edge -> left edge")
 					x1 = self.pin.xmin
 					y1 = self.y0 - dx*w
 					return x1, y1
@@ -217,13 +206,11 @@ class Ray(object):
 				# check if it hits the x or y edge first
 				if dx*w > dy:
 					# then it hits the bottom first
-					#print("top edge -> bottom edge")
 					x1 = self.x0 + dy/w
 					y1 = self.pin.ymin
 					return x1, y1
 				else:
 					# then it hits the right first
-					#print("top edge -> right edge")
 					x1 = self.pin.xmax
 					y1 = self.y0 - dx*w
 					return x1, y1
@@ -237,13 +224,11 @@ class Ray(object):
 				# check if it hits the x or y edge first
 				if dx*w > dy:
 					# then it hits the top first
-					#print("bottom edge -> top edge")
 					x1 = self.x0 - dy/w
 					y1 = self.pin.ymax
 					return x1, y1
 				else:
 					# then it hits the left first
-					#print("top edge -> left edge")
 					x1 = self.pin.xmin
 					y1 = self.y0 + dx*w
 					return x1, y1
@@ -253,13 +238,11 @@ class Ray(object):
 				# check if it hits the x or y edge first
 				if dx*w > dy:
 					# then it hits the top first
-					#print("bottom edge -> top edge")
 					x1 = self.x0 + dy/w
 					y1 = self.pin.ymax
 					return x1, y1
 				else:
 					# then it hits the right first
-					#print("top edge -> right edge")
 					x1 = self.pin.xmax
 					y1 = self.y0 + dx*w
 					return x1, y1

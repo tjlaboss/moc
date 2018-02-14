@@ -2,7 +2,6 @@
 #
 # Class and methods for a fuel pin cell in MOC
 
-import math
 from functions import *
 import pylab
 import random
@@ -33,8 +32,8 @@ class Cell(object):
 					[Default: True]
 	
 	"""
-	def __init__(self, pitch, radius, sigam_n_fuel, sigma_y_mod,
-	             boundary = "reflective", plot = True):
+	def __init__(self, pitch, radius, sigma_n_fuel, sigma_y_mod,
+				 boundary = "reflective", plot = True):
 		self.pitch = pitch
 		self.radius = radius
 		boundary = boundary.lower()
@@ -47,7 +46,7 @@ class Cell(object):
 		self.ymin = -pitch/2.0
 		self.ymax = +pitch/2.0
 		
-		self.sigma_n_fuel = sigam_n_fuel
+		self.sigma_n_fuel = sigma_n_fuel
 		self.sigma_y_mod = sigma_y_mod
 		
 		if plot:
@@ -99,8 +98,8 @@ class Cell(object):
 		
 		if col is None:
 			col = (random.random(), random.random(), random.random())
-		u = math.cos(track.phi)
-		v = math.sin(track.phi)
+		u = pylab.cos(track.phi)
+		v = pylab.sin(track.phi)
 		
 		# Instantiate these; they'll be updated as we go
 		xstop = track.x0
@@ -140,7 +139,9 @@ test_cell = Cell(PITCH, RADIUS, SIGMA_NF, SIGMA_A)
 
 if __name__ == "__main__":
 	import ray
-	track = ray.Ray(-.25, -PITCH/2, rad(60), test_cell, None, None)
-	s1, s2, sf = track.trace()
-	test_cell.plot_track(track, s1, sf, s2)
-	pylab.show()
+	track = ray.Ray(-.25, -PITCH/2, rad(60), None, test_cell)
+	segments = track.trace()
+	if test_cell.plot_track(track, segments):
+		pylab.show()
+	else:
+		raise SystemError("Test Failed!")
