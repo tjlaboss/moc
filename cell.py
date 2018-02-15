@@ -2,7 +2,6 @@
 #
 # Class and methods for a fuel pin cell in MOC
 
-import math
 from functions import *
 import pylab
 import random
@@ -10,12 +9,15 @@ import random
 # Parameters for the Cell in the assignment
 PITCH = 1.26                        # cm; pin pitch
 RADIUS = 0.4                        # cm; fuel pin radius
+AREA_FUEL = pylab.pi*RADIUS**2		# cm^2; fuel pin area
+AREA_MOD = PITCH**2 - AREA_FUEL		# cm^2; moderator area
+AREA_RATIO = AREA_MOD/AREA_FUEL
 N238 = 2.2E-2                       # 10^24 atoms/cm^3; number density of U238
 SIGMA_P238 = 11.4                   # b; Potential scatter xs of U238
 SIGMA_PO = 4.0                      # b; Potential scatter xs of O16
 SIGMA_P = SIGMA_P238 + 2*SIGMA_PO   # b; Potential scatter xs of fuel
 SIGMA_NF = N238*SIGMA_P             # cm^-1; fuel potential scatter xs
-SIGMA_AS = [0, .25, 1.0, 5.0, pylab.infty]  # cm^-1; moderator absorption xs
+SIGMA_AS = [1E-5, .25, 1.0, 5.0, pylab.infty]  # cm^-1; moderator absorption xs
 SIGMA_A = SIGMA_AS[0]  # debug
 BOUNDARY_CONDITIONS = {"reflective", "periodic", "vacuum"}
 
@@ -33,8 +35,8 @@ class Cell(object):
 					[Default: True]
 	
 	"""
-	def __init__(self, pitch, radius, sigam_n_fuel, sigma_y_mod,
-	             boundary = "reflective", plot = True):
+	def __init__(self, pitch, radius, sigma_n_fuel, sigma_y_mod,
+				 boundary = "reflective", plot = True):
 		self.pitch = pitch
 		self.radius = radius
 		boundary = boundary.lower()
@@ -47,13 +49,13 @@ class Cell(object):
 		self.ymin = -pitch/2.0
 		self.ymax = +pitch/2.0
 		
-		self.sigma_n_fuel = sigam_n_fuel
+		self.sigma_n_fuel = sigma_n_fuel
 		self.sigma_y_mod = sigma_y_mod
 		
 		if plot:
 			self.figure, self.axis = self._set_plot()
 		else:
-			self.figure, self.axis = None
+			self.figure, self.axis = None, None
 		
 	def _set_plot(self):
 		"""Set up a base plot"""
@@ -99,8 +101,8 @@ class Cell(object):
 		
 		if col is None:
 			col = (random.random(), random.random(), random.random())
-		u = math.cos(track.phi)
-		v = math.sin(track.phi)
+		u = pylab.cos(track.phi)
+		v = pylab.sin(track.phi)
 		
 		# Instantiate these; they'll be updated as we go
 		xstop = track.x0
@@ -136,11 +138,12 @@ class Cell(object):
 		return True
 			
 
-test_cell = Cell(PITCH, RADIUS, SIGMA_NF, SIGMA_A)
-
 if __name__ == "__main__":
+	test_cell = Cell(PITCH, RADIUS, SIGMA_NF, SIGMA_A)
 	import ray
-	track = ray.Ray(-.25, -PITCH/2, rad(60), test_cell, None, None)
-	s1, s2, sf = track.trace()
-	test_cell.plot_track(track, s1, sf, s2)
-	pylab.show()
+	track = ray.Ray(-.25, -PITCH/2, rad(60), None, test_cell)
+	segments = track.trace()
+	if test_cell.plot_track(track, segments):
+		pylab.show()
+	else:
+		raise SystemError("Test Failed!")
