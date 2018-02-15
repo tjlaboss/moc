@@ -2,7 +2,6 @@
 #
 # Class and methods for a fuel pin cell in MOC
 
-import math
 from functions import *
 import pylab
 import random
@@ -18,7 +17,7 @@ SIGMA_P238 = 11.4                   # b; Potential scatter xs of U238
 SIGMA_PO = 4.0                      # b; Potential scatter xs of O16
 SIGMA_P = SIGMA_P238 + 2*SIGMA_PO   # b; Potential scatter xs of fuel
 SIGMA_NF = N238*SIGMA_P             # cm^-1; fuel potential scatter xs
-SIGMA_AS = [0, .25, 1.0, 5.0, pylab.infty]  # cm^-1; moderator absorption xs
+SIGMA_AS = [1E-5, .25, 1.0, 5.0, pylab.infty]  # cm^-1; moderator absorption xs
 SIGMA_A = SIGMA_AS[0]  # debug
 BOUNDARY_CONDITIONS = {"reflective", "periodic", "vacuum"}
 
@@ -56,7 +55,7 @@ class Cell(object):
 		if plot:
 			self.figure, self.axis = self._set_plot()
 		else:
-			self.figure, self.axis = None
+			self.figure, self.axis = None, None
 		
 	def _set_plot(self):
 		"""Set up a base plot"""
@@ -139,9 +138,8 @@ class Cell(object):
 		return True
 			
 
-test_cell = Cell(PITCH, RADIUS, SIGMA_NF, SIGMA_A)
-
 if __name__ == "__main__":
+	test_cell = Cell(PITCH, RADIUS, SIGMA_NF, SIGMA_A)
 	import ray
 	track = ray.Ray(-.25, -PITCH/2, rad(60), test_cell, None, None)
 	s1, s2, sf = track.trace()

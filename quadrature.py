@@ -1,6 +1,6 @@
 # Quadrature
 #
-# Quadrature classes: Tabuchi-Yamamoto, and TODO: more to come
+# Quadrature classes: Tabuchi-Yamamoto, Uniform Distributed, and Leonard.
 
 import numpy
 
@@ -69,11 +69,14 @@ class AzimuthalQuadrature(Quadrature):
 	def __init__(self, phis, np, name = "Generic Azimuthal"):
 		super().__init__(phis, np, name)
 		# Set the azimuthal angles and weights
-		c = 1 / (2 * numpy.pi)
-		self.wa[0] = c*(phis[1] + phis[0]) / 2
-		self.wa[-1] = c*(numpy.pi - phis[-1] - phis[-2]) / 2
-		for m in range(1, self.na - 1):
-			self.wa[m] = c*(phis[m+1] - phis[m-1]) / 2
+		if self.na == 1:
+			self.wa = numpy.ones(1)/8
+		else:
+			c = 1 / (2 * numpy.pi)
+			self.wa[0] = c*(phis[1] + phis[0]) / 2
+			self.wa[-1] = c*(numpy.pi - phis[-1] - phis[-2]) / 2
+			for m in range(1, self.na - 1):
+				self.wa[m] = c*(phis[m+1] - phis[m-1]) / 2
 
 
 class UniformDistributedQuadrature(AzimuthalQuadrature):
