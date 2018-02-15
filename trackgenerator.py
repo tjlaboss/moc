@@ -61,7 +61,7 @@ class TrackGenerator(object):
 			self.dazim[i] = self.dxs[i]*math.sin(phi_eff)
 		self.ntotal = 2 * (self.nxs.sum() + self.nys.sum())
 		
-		#print("Angles:", [round(deg(ang)) for ang in self.phis])
+		print("Angles:", [round(deg(ang)) for ang in self.phis[0,:]])
 		self._tracks = []
 		# Integrate nxs, nys
 		for i in range(1, n):
@@ -302,7 +302,7 @@ class TrackGenerator(object):
 					
 if __name__ == "__main__":
 	# test
-	t = TrackGenerator(cell.test_cell, 12*3, dtarget = .05)
+	t = TrackGenerator(cell.test_cell, 4, dtarget = .25)
 	t.generate()
 	if not DEBUG:
 		pylab.show()

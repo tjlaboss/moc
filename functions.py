@@ -43,10 +43,10 @@ def l2norm_2d(new_psi, old_psi):
 	assert new_psi.shape == old_psi.shape, \
 		"Matrix dimensions do not match!"
 	fluxdiff = 0
-	ny, nx = new_psi.shape
+	ny, nx, g = new_psi.shape
 	for j in range(ny):
 		for i in range(nx):
-			fluxdiff += (new_psi[j, i] - old_psi[j, i])**2
+			fluxdiff += (new_psi[j, i, 0] - old_psi[j, i, 0])**2
 	fluxdiff = math.sqrt(fluxdiff/nx*ny)
 	return fluxdiff
 
