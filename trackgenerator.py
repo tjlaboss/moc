@@ -284,8 +284,6 @@ class TrackGenerator(object):
 				if not is_used(y00, yused_xmin) and count0 < nxy:
 					b = 0
 					phi = self.phis[b, a]
-					if True:
-						print("X00: {:.2f}\tY00: {:.2f}\tphi: {}".format(x00, y00, round(deg(phi))))
 					track00 = self._track_by_quadrant(x00, y00, phi, a)
 					track00.index0 = self._increment()
 					self._add_track_to_dict(track00)
@@ -295,13 +293,16 @@ class TrackGenerator(object):
 
 			if count0 != nxy:
 				warn("Wrong number of tracks ({} out of {})".format(count0, nxy))
+			# Plot the full cycle for this azimuthal angle
+			#pylab.show()
+			#self.cell.figure, self.cell.axis = self.cell._set_plot()
 
 		print("...done.\n")
 
 					
 if __name__ == "__main__":
 	# test
-	t = TrackGenerator(cell.test_cell, 12, dtarget = .25)
+	t = TrackGenerator(cell.test_cell, 12*3, dtarget = .05)
 	t.generate()
 	if not DEBUG:
 		pylab.show()

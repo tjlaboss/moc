@@ -10,6 +10,9 @@ import random
 # Parameters for the Cell in the assignment
 PITCH = 1.26                        # cm; pin pitch
 RADIUS = 0.4                        # cm; fuel pin radius
+AREA_FUEL = pylab.pi*RADIUS**2		# cm^2; fuel pin area
+AREA_MOD = PITCH**2 - AREA_FUEL		# cm^2; moderator area
+AREA_RATIO = AREA_MOD/AREA_FUEL
 N238 = 2.2E-2                       # 10^24 atoms/cm^3; number density of U238
 SIGMA_P238 = 11.4                   # b; Potential scatter xs of U238
 SIGMA_PO = 4.0                      # b; Potential scatter xs of O16

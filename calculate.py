@@ -12,8 +12,8 @@ from trackgenerator import TrackGenerator
 # Global constants
 PLOT = True
 MAXITER = 100
-EPS = 1E-5      # Convergence criterion  # TODO: Change back to 1E-5
-N_AZIM_2 = 12   # number of azimuthal angle pairs
+EPS = 1E-3      # Convergence criterion  # TODO: Change back to 1E-5
+N_AZIM_2 = 12*3   # number of azimuthal angle pairs
 D_AZIM = 0.25   # target spacing between parallel tracks (cm)
 QFSR = 1.0      # flat fixed source magnitude
 
@@ -56,10 +56,81 @@ class Calculator(object):
 		self.eps = eps
 		self.plot = plot
 		self.psi = numpy.zeros((self.quad.np, self.generator.ntotal))
-		self.modr_flux = -1.0
-		self.fuel_flux = -1.0
-		
-		
+		self.modr_flux = 1.0
+		self.fuel_flux = 1.0
+
+	def transport_sweep(self, q):
+		"""Sweep over all angles, tracks, and segments
+
+		Parameters:
+		-----------
+		q:				float; source in the fuel
+
+		Returns:
+		--------
+		fuel_flux:		float; scalar flux in the fuel
+		modr_flux:		float; scalar flux in the moderator
+		"""
+		# Shorthand
+		sig_fuel = self.model.sigma_n_fuel
+		sig_mod = self.model.sigma_y_mod
+		# Initialize the fluxes in each region
+		modr_flux = 0.0
+		fuel_flux = q
+		#fuel_flux = 4*math.pi*q/sig_fuel # 0.0
+		for a in range(self.quad.na):
+			wa = self.quad.wa[a]
+			dazim = self.generator.dazim[a]  # effective track spacing
+			track_list = self.generator.track_phis[a]
+			# track0 = track_list[0]
+			# track = track_list[1]
+			# while track is not track0:
+			# TODO: Determine if it matters where we start??
+			for track in track_list:
+				for fwd in (True, False):
+					index0, index1 = track.get_indices(fwd)
+					# Precalculate some stuff before the polar quadrature loop
+					dists = track.trace(fwd)
+					if self.plot:
+						self.model.plot_track(track, dists)
+					s1, sf, s2 = dists
+					for p in range(self.quad.np):
+						psi = self.psi[p, index0]	# angular flux --> pull from array
+						sintheta = self.quad.sinthetas[p]
+						wp = self.quad.wp[p]  		# includes sintheta
+						#weight = 4 * math.pi * wp * wa * dazim
+						weight = wp * wa * dazim
+						# Moderator before cell (absorption, no source)
+						if s1:
+							attenuation = math.exp(-sig_mod * s1 / sintheta)
+							delta_psi1 = psi * (1 - attenuation)
+							modr_flux += weight * delta_psi1 #/ cell.AREA_MOD
+							psi -= delta_psi1
+						# Fuel inside cell (scatter, with source)
+						if sf:
+							attenuation = math.exp(-sig_fuel * sf / sintheta)
+							# Problem: this becomes negative now.
+							delta_psif = (psi - q / sig_fuel) * (1 - attenuation)
+							#print(psi, q/sig_fuel, "\t" + "-"*4 + "\t", delta_psif)
+							fuel_flux += weight * delta_psif #/ cell.AREA_FUEL
+							psi -= delta_psif
+						# Moderator after cell (absorption, no source)
+						if s2:
+							attenuation = math.exp(-sig_mod * s2 / sintheta)
+							delta_psi2 = psi * (1 - attenuation)
+							modr_flux += weight * delta_psi2 #/ cell.AREA_MOD
+							psi -= delta_psi2
+						try:
+							self.psi[p, index1] = psi
+						except IndexError:
+							print(self.psi.shape)
+							raise
+
+		fuel_flux *= 4*math.pi/sig_fuel
+		modr_flux *= 4*math.pi/sig_mod
+		return fuel_flux, modr_flux
+
+
 	def calculate(self):
 		"""Do the flux calculation
 		
@@ -70,75 +141,18 @@ class Calculator(object):
 		converged:      Boolean; whether the calculation converged
 		diff:           float; the l2norm of the psi vector from the most recent iteration
 		"""
-		sig_mod = self.model.sigma_y_mod
-		sig_fuel = self.model.sigma_n_fuel
-		# Precalculations
-		q = QFSR/sig_fuel/(4*math.pi)
+		# Precalculate the source in the fuel FSR
+		source = (QFSR + self.fuel_flux*self.model.sigma_n_fuel)/(4*math.pi)
 		# Lay down the tracks and initialize the fluxes
 		self.generator.generate()
 		# And then iterate.
 		diff = 1 + EPS
 		count = 0
+		print("Sweeping...")
 		while diff > EPS:
 		#while count < 10:    # restore the 'while' loop
-			# Reset the fluxes before sweeping
 			psi_old = numpy.array(self.psi)
-			fuel_flux = QFSR/sig_fuel
-			modr_flux = 0.0  # No source in fuel
-			for a in range(self.quad.na):
-				wa = self.quad.wa[a]
-				dazim = self.generator.dazim[a] # effective track spacing
-				track_list = self.generator.track_phis[a]
-				#track0 = track_list[0]
-				#track = track_list[1]
-				#while track is not track0:
-				# TODO: Determine if it matters where we start??
-				for track in track_list:
-					for fwd in (True, False):
-						index0, index1 = track.get_indices(fwd)
-						if count == -1:#0: # debug, delete this
-							print("\n", int(deg(track.phi)), "deg")
-							if fwd:
-								print(index0, "->", index1, " \t ", track.key0, track.key1)
-							else:
-								print(index0, "->", index1, " \t ", track.key1, track.key0)
-						# Precalculate some stuff before the polar quadrature loop
-						dists = track.trace(fwd)
-						if self.plot:
-							self.model.plot_track(track, dists)
-						s1, sf, s2 = dists
-						for p in range(self.quad.np):
-							psi = self.psi[p, index0]  # angular flux --> pull from array
-							sintheta = self.quad.sinthetas[p]
-							wp = self.quad.wp[p]    # includes sintheta
-							weight = 2*math.pi*wp*wa*dazim
-							# Moderator before cell (absorption, no source)
-							if s1:
-								attenuation = math.exp(-sig_mod*s1/sintheta)
-								delta_psi1 = psi*(1 - attenuation)
-								modr_flux += weight*delta_psi1
-								psi -= delta_psi1
-							# Fuel inside cell (scatter, with source)
-							if sf:
-								attenuation = math.exp(-sig_fuel*sf/sintheta)
-								delta_psif = (psi - q/sig_fuel)*(1 - attenuation)
-								fuel_flux += weight*delta_psif
-								psi -= delta_psif
-							# Moderator after cell (absorption, no source)
-							if s2:
-								attenuation = math.exp(-sig_mod*s2/sintheta)
-								delta_psi2 = psi*(1 - attenuation)
-								modr_flux += weight*delta_psi2
-								psi -= delta_psi2
-							try:
-								self.psi[p, index1] = psi
-							except IndexError:
-								print(self.psi.shape)
-								raise
-
-					#print(track, track.next_track)
-					#track = track.next_track
-			
+			fuel_flux, modr_flux = self.transport_sweep(source)
 			print(count)
 			# Check for convergence
 			if count > 0:
@@ -155,12 +169,14 @@ class Calculator(object):
 			if count >= MAXITER:
 				print("FAILED TO CONVERGE AFTER", count, "ITERATIONS")
 				return False, diff
-		
+
+		print("...done.")
 		print("Converged after", count, "iterations.")
 		#print(self.psi)
 		print(self.psi.sum(axis=0))
-		print("Flux in fuel: {}\tFlux in mod: {}\tRatio: {}".format(
-			self.fuel_flux, self.modr_flux, self.fuel_flux/self.modr_flux))
+		flux_ratio = self.fuel_flux/self.modr_flux
+		print("Flux in fuel: {:.4f}\tFlux in mod: {:.4f}\tRatio: {:.4f}\t(Weighted: {:.4f})".format(
+			self.fuel_flux, self.modr_flux, flux_ratio, flux_ratio*cell.AREA_RATIO))
 		return True, diff
 				
 		
