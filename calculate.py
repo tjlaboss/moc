@@ -76,6 +76,8 @@ class Calculator(object):
 		fuel_flux:		float; scalar flux in the fuel
 		modr_flux:		float; scalar flux in the moderator
 		"""
+		assert self.generator.generated, \
+			"You must generate tracks before sweeping!"
 		# Shorthand
 		sig_fuel = self.model.sigma_n_fuel
 		sig_mod = self.model.sigma_y_mod
@@ -144,7 +146,8 @@ class Calculator(object):
 		fluxdiff:           float; the l2norm of the psi vector from the most recent iteration
 		"""
 		# Lay down the tracks and initialize the fluxes
-		self.generator.generate()
+		if not self.generator.generated:
+			self.generator.generate()
 		# And then iterate.
 		count = 0
 		fluxdiff, fdiff, mdiff = [1 + EPS]*3

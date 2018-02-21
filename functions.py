@@ -49,7 +49,7 @@ def l2norm_2d(new_psi, old_psi):
 			new = new_psi[j, i]
 			if new:
 				old = old_psi[j, i]
-				fluxdiff += ((new - old)/new**2)
+				fluxdiff += ((new - old)/new)**2
 	fluxdiff = math.sqrt(fluxdiff/nx*ny)
 	return fluxdiff
 

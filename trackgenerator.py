@@ -76,7 +76,8 @@ class TrackGenerator(object):
 		self.track_phis = dict()    # key = phi
 		#
 		self.__flux_index = -1
-	
+		self.generated = False
+
 	def _increment(self):
 		self.__flux_index += 1
 		return self.__flux_index
@@ -312,6 +313,7 @@ class TrackGenerator(object):
 				self.cell.figure, self.cell.axis = self.cell._set_plot()
 
 		print("...done.\n")
+		self.generated = True
 
 					
 if __name__ == "__main__":

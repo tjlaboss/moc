@@ -151,8 +151,9 @@ class YamamotoQuadrature(AzimuthalQuadrature):
 
 if __name__ == "__main__":
 	# test
-	from cell import test_cell
+	import cell as c
 	from trackgenerator import TrackGenerator
+	test_cell = c.Cell(c.PITCH, c.RADIUS, c.SIGMA_NF, c.SIGMA_A)
 	
 	t = TrackGenerator(test_cell, 8*2, dtarget = .01)
 	qua1 = YamamotoQuadrature(t.phis[0, :], 3)
