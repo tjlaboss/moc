@@ -100,7 +100,13 @@ class Calculator(object):
 						self.fuel_area_tally += sf*wk*wa
 						self.modr_area_tally += (s1 + s2)*wk*wa
 					for p in range(self.quad.np):
-						psi = self.psi[p, index0, fwd*1]	# angular flux --> pull from array
+						if self.model.boundary == "reflective":
+							psi = self.psi[p, index0, fwd*1]	# angular flux --> pull from array
+						elif self.model.boundary == "vacuum":
+							psi = 0.0
+						else:
+							errstr = "Unknown Boundary Condition: {}"
+							raise NotImplementedError(errstr.format(self.model.boundary))
 						sintheta = self.quad.sinthetas[p]
 						wp = self.quad.wp[p]  		# includes sintheta
 						weight = wp * wa * wk
@@ -182,8 +188,8 @@ class Calculator(object):
 		
 if __name__ == "__main__":
 	for sigma_a in cell.SIGMA_AS[1:2]:
-		cell0 = cell.Cell(cell.PITCH, cell.RADIUS,
-						  cell.SIGMA_NF, sigma_a, plot = PLOT)
+		cell0 = cell.Cell(cell.PITCH, cell.RADIUS, cell.SIGMA_NF,
+						  sigma_a, plot = PLOT, boundary="reflective")
 		trackgen = TrackGenerator(cell0, N_AZIM_2, D_AZIM)
 		tabuchi = quadrature.YamamotoQuadrature(trackgen.phis[0,:], 3)
 		calc = Calculator(cell0, trackgen, tabuchi, plot = PLOT)
