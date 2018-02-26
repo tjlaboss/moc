@@ -70,13 +70,13 @@ class AzimuthalQuadrature(Quadrature):
 		super().__init__(phis, np, name)
 		# Set the azimuthal angles and weights
 		if self.na == 1:
-			self.wa = numpy.ones(1)/8
+			self.wa = numpy.ones(1)/4
 		else:
-			c = 1 / (2 * numpy.pi)
-			self.wa[0] = c*(phis[1] + phis[0]) / 2
-			self.wa[-1] = c*(numpy.pi - phis[-1] - phis[-2]) / 2
+			c = 1 / (4 * numpy.pi)
+			self.wa[0] = c*(phis[1] + phis[0])
+			self.wa[-1] = c*(numpy.pi - phis[-1] - phis[-2])
 			for m in range(1, self.na - 1):
-				self.wa[m] = c*(phis[m+1] - phis[m-1]) / 2
+				self.wa[m] = c*(phis[m+1] - phis[m-1])
 
 
 class UniformDistributedQuadrature(AzimuthalQuadrature):

@@ -56,6 +56,8 @@ class Cell(object):
 			assert isinstance(fuel, fsr.FlatSourceRegion), \
 				"You probably forgot to change SIGMA_NF to fuel_fsr."
 			self.fuel = fuel
+			if not fuel.source:
+				print("Warning: No source in fuel.")
 		if mod is not None:
 			assert isinstance(mod,  fsr.FlatSourceRegion), \
 				"You probably forgot to change SIGMA_A to mod_fsr."
