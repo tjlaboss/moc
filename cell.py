@@ -3,6 +3,7 @@
 # Class and methods for a fuel pin cell in MOC
 
 from functions import *
+import fsr
 import pylab
 import random
 
@@ -17,8 +18,10 @@ SIGMA_P238 = 11.4                   # b; Potential scatter xs of U238
 SIGMA_PO = 4.0                      # b; Potential scatter xs of O16
 SIGMA_P = SIGMA_P238 + 2*SIGMA_PO   # b; Potential scatter xs of fuel
 SIGMA_NF = N238*SIGMA_P             # cm^-1; fuel potential scatter xs
-SIGMA_AS = [1E-5, .25, 1.0, 5.0, pylab.infty]  # cm^-1; moderator absorption xs
-SIGMA_A = SIGMA_AS[0]  # debug
+SIGMA_AS = [1E-6, .25, 1.0, 5.0, 1E6]  # cm^-1; moderator absorption xs
+MODS = [fsr.FlatSourceRegion(AREA_FUEL, a, 0.0, "Mod") for a in SIGMA_AS]
+FUEL = fsr.FlatSourceRegion(AREA_FUEL, SIGMA_NF, 1.0, "Fuel")
+MOD = MODS[1]
 BOUNDARY_CONDITIONS = {"reflective", "periodic", "vacuum"}
 
 class Cell(object):
@@ -28,14 +31,14 @@ class Cell(object):
 	-----------
 	pitch:          float; lattice pitch (cm)
 	radius:         float; pin radius (cm)
-	sigma_n_fuel:   float; macroscopic potential scatter xs in the fuel (cm^-1)
-	sigma_y_mod:    float; macroscopic absorption xs in the moderator (cm^-1)
+	fuel:			fsr.FlatSourceRegion; FSR for the fuel
+	sigma_y_mod:    fsr.FlatSourceRegion; FSR for the moderator
 	boundary:       str; one of {"reflective", "periodic", "vacuum"}
 	plot:           Boolean; whether to produce a plot of the model
 					[Default: True]
 	
 	"""
-	def __init__(self, pitch, radius, sigma_n_fuel, sigma_y_mod,
+	def __init__(self, pitch, radius, fuel, mod,
 				 boundary = "reflective", plot = True):
 		self.pitch = pitch
 		self.radius = radius
@@ -48,9 +51,15 @@ class Cell(object):
 		self.xmax = +pitch/2.0
 		self.ymin = -pitch/2.0
 		self.ymax = +pitch/2.0
-		
-		self.sigma_n_fuel = sigma_n_fuel
-		self.sigma_y_mod = sigma_y_mod
+
+		if fuel is not None:
+			assert isinstance(fuel, fsr.FlatSourceRegion), \
+				"You probably forgot to change SIGMA_NF to fuel_fsr."
+			self.fuel = fuel
+		if mod is not None:
+			assert isinstance(mod,  fsr.FlatSourceRegion), \
+				"You probably forgot to change SIGMA_A to mod_fsr."
+			self.mod = mod
 		
 		if plot:
 			self.figure, self.axis = self._set_plot()
@@ -139,7 +148,7 @@ class Cell(object):
 			
 
 if __name__ == "__main__":
-	test_cell = Cell(PITCH, RADIUS, SIGMA_NF, SIGMA_A)
+	test_cell = Cell(PITCH, RADIUS, FUEL, MOD)
 	import ray
 	track = ray.Ray(-.25, -PITCH/2, rad(60), None, test_cell)
 	segments = track.trace()

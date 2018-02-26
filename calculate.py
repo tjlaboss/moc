@@ -51,7 +51,7 @@ class Calculator(object):
 		self.model = model
 		self.generator = generator
 		self.quad = quad
-		self.source = source / (4*pylab.pi)
+		#self.source = source / (4*pylab.pi)
 		self.eps = eps
 		self.plot = plot
 		self.psi = pylab.zeros((self.quad.np, self.generator.ntotal, 2))
@@ -61,7 +61,7 @@ class Calculator(object):
 		self.modr_area_tally = None
 		self.fuel_area_tally = None
 
-	def transport_sweep(self, q, calculate_area=False):
+	def transport_sweep(self, calculate_area=False):
 		"""Sweep over all angles, tracks, and segments
 
 		Parameters:
@@ -79,11 +79,11 @@ class Calculator(object):
 		assert self.generator.generated, \
 			"You must generate tracks before sweeping!"
 		# Shorthand
-		sig_fuel = self.model.sigma_n_fuel
-		sig_mod = self.model.sigma_y_mod
+		sig_fuel = self.model.fuel.xs
+		sig_mod = self.model.mod.xs
 		# Initialize the fluxes in each region
 		modr_flux = 0.0
-		fuel_flux = q
+		fuel_flux = self.model.fuel.q / (4 * pylab.pi)
 		if calculate_area:
 			self.modr_area_tally = 0
 			self.fuel_area_tally = 0
@@ -113,20 +113,20 @@ class Calculator(object):
 						# Moderator before cell (absorption, no source)
 						if s1:
 							attenuation = pylab.exp(-sig_mod * s1 / sintheta)
-							delta_psi1 = psi * (1 - attenuation)
-							modr_flux += weight * delta_psi1 / cell.AREA_MOD
+							delta_psi1 = (psi - self.model.mod.source) * (1 - attenuation)
+							modr_flux += weight * delta_psi1 / self.model.mod.area
 							psi -= delta_psi1
 						# Fuel inside cell (scatter, with source)
 						if sf:
 							attenuation = pylab.exp(-sig_fuel * sf / sintheta)
-							delta_psif = (psi - q / sig_fuel) * (1 - attenuation)
-							fuel_flux += weight * delta_psif / cell.AREA_FUEL
+							delta_psif = (psi - self.model.fuel.source) * (1 - attenuation)
+							fuel_flux += weight * delta_psif / self.model.fuel.area
 							psi -= delta_psif
 						# Moderator after cell (absorption, no source)
 						if s2:
 							attenuation = pylab.exp(-sig_mod * s2 / sintheta)
-							delta_psi2 = psi * (1 - attenuation)
-							modr_flux += weight * delta_psi2 / cell.AREA_MOD
+							delta_psi2 = (psi - self.model.mod.source) * (1 - attenuation)
+							modr_flux += weight * delta_psi2 / self.model.mod.area
 							psi -= delta_psi2
 						try:
 							self.psi[p, index1, fwd*1] = psi
@@ -160,7 +160,7 @@ class Calculator(object):
 		print("Sweeping...")
 		while fluxdiff > EPS or fdiff > EPS or mdiff > EPS:
 			psi_old = pylab.array(self.psi)
-			fuel_flux, modr_flux = self.transport_sweep(q=self.source, calculate_area=not count)
+			fuel_flux, modr_flux = self.transport_sweep(calculate_area=not count)
 			print("\nIteration", count)
 			# Check for convergence
 			if count > 0:
@@ -187,9 +187,12 @@ class Calculator(object):
 		
 		
 if __name__ == "__main__":
+	import fsr
+	fuel_fsr = fsr.FlatSourceRegion(cell.AREA_FUEL, cell.SIGMA_NF, QFSR, "Fuel")
 	for sigma_a in cell.SIGMA_AS[1:2]:
-		cell0 = cell.Cell(cell.PITCH, cell.RADIUS, cell.SIGMA_NF,
-						  sigma_a, plot = PLOT, boundary="reflective")
+		mod_fsr = fsr.FlatSourceRegion(cell.AREA_MOD, sigma_a, 0.0, "Mod")
+		cell0 = cell.Cell(cell.PITCH, cell.RADIUS, fuel_fsr, mod_fsr,
+						  plot = PLOT, boundary="reflective")
 		trackgen = TrackGenerator(cell0, N_AZIM_2, D_AZIM)
 		tabuchi = quadrature.YamamotoQuadrature(trackgen.phis[0,:], 3)
 		calc = Calculator(cell0, trackgen, tabuchi, plot = PLOT)

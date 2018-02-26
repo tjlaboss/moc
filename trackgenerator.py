@@ -29,7 +29,7 @@ class TrackGenerator(object):
 		self.cell = cell_
 		self.nazim = nazim
 		if self.cell.axis:
-			titext = "{} Azimuthal angles\t$\delta_z = {}$ cm".format(
+			titext = "{} Azimuthal angles\t$\delta_\\varphi = {}$ cm".format(
 				2*nazim, dtarget)
 			self.cell.axis.set_title(titext, fontsize="14")
 		
@@ -309,6 +309,7 @@ class TrackGenerator(object):
 				warn("Wrong number of tracks ({} out of {})".format(count0, nxy))
 			if self.cell.figure and plot_each_cycle:
 				# Plot the full cycle for this azimuthal angle
+				pylab.tight_layout()
 				pylab.show()
 				self.cell.figure, self.cell.axis = self.cell._set_plot()
 
@@ -319,8 +320,8 @@ class TrackGenerator(object):
 if __name__ == "__main__":
 	# test
 	import cell as c
-	test_cell = c.Cell(c.PITCH, c.RADIUS, c.SIGMA_NF, c.SIGMA_A)
-	t = TrackGenerator(test_cell, 16, dtarget = .25)
+	test_cell = c.Cell(c.PITCH, c.RADIUS, None, None)
+	t = TrackGenerator(test_cell, 4, dtarget = .25)
 	t.generate()
 	if not DEBUG:
 		pylab.show()
