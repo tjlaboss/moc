@@ -47,11 +47,10 @@ class Calculator(object):
 	flux_dict_1:    nested dictionaries:
 					{phi : {(x1, y1) : {(x0, y0) : flux } } }
 	"""
-	def __init__(self, model, generator, quad, source = QFSR, eps = EPS, plot = True):
+	def __init__(self, model, generator, quad, eps = EPS, plot = True):
 		self.model = model
 		self.generator = generator
 		self.quad = quad
-		#self.source = source / (4*pylab.pi)
 		self.eps = eps
 		self.plot = plot
 		self.psi = pylab.zeros((self.quad.np, self.generator.ntotal, 2))
@@ -82,7 +81,7 @@ class Calculator(object):
 		sig_fuel = self.model.fuel.xs
 		sig_mod = self.model.mod.xs
 		# Initialize the fluxes in each region
-		modr_flux = 0.0
+		modr_flux = self.model.mod.q  / (4 * pylab.pi)
 		fuel_flux = self.model.fuel.q / (4 * pylab.pi)
 		if calculate_area:
 			self.modr_area_tally = 0
