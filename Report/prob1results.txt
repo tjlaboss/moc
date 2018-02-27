@@ -1,0 +1,42 @@
+Problem 1:
+----------
+	Mod XS = 0.00 cm^-1
+		Fuel-to-mod flux ratio: 1.00000
+
+	Mod XS = 0.25 cm^-1
+		Fuel-to-mod flux ratio: 1.20622
+
+	Mod XS = 1.00 cm^-1
+		Fuel-to-mod flux ratio: 1.83596
+
+	Mod XS = 5.00 cm^-1
+		Fuel-to-mod flux ratio: 5.75976
+
+	Mod XS = 1000000.00 cm^-1
+		Fuel-to-mod flux ratio: 1123060.96530
+
+DAZIM: 0.001, NAZIM2: 128
+
+
+---------------------------------
+
+
+Problem 1:
+----------
+	Mod XS = 0.00 cm^-1
+		Fuel-to-mod flux ratio: 1.00003
+
+	Mod XS = 0.25 cm^-1
+		Fuel-to-mod flux ratio: 1.20564
+
+	Mod XS = 1.00 cm^-1
+		Fuel-to-mod flux ratio: 1.83543
+
+	Mod XS = 5.00 cm^-1
+		Fuel-to-mod flux ratio: 5.75756
+
+	Mod XS = 1000000.00 cm^-1
+		Fuel-to-mod flux ratio: 1122626.28736
+
+DAZIM: 0.005, NAZIM2: 128
+

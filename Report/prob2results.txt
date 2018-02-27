@@ -1,0 +1,32 @@
+Problem 2:
+----------
+	Mod XS = 0.000 cm^-1
+		Fuel/Mod flux ratio: 1.00003
+		P_F->F (wigner):     0.99988
+		P_F->F (actual):     1.00000
+		Dancoff Correction:  1.00000
+
+	Mod XS = 0.250 cm^-1
+		Fuel/Mod flux ratio: 1.40082
+		P_F->F (wigner):     0.99988
+		P_F->F (actual):     0.99996
+		Dancoff Correction:  0.69203
+
+	Mod XS = 1.000 cm^-1
+		Fuel/Mod flux ratio: 2.48096
+		P_F->F (wigner):     0.99988
+		P_F->F (actual):     0.99991
+		Dancoff Correction:  0.30449
+
+	Mod XS = 5.000 cm^-1
+		Fuel/Mod flux ratio: 8.78049
+		P_F->F (wigner):     0.99988
+		P_F->F (actual):     0.99988
+		Dancoff Correction:  0.01744
+
+	Mod XS = 1000000.000 cm^-1
+		Fuel/Mod flux ratio: 1725472.90967
+		P_F->F (wigner):     0.99988
+		P_F->F (actual):     0.99987
+		Dancoff Correction:  0.00000
+
