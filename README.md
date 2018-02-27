@@ -6,29 +6,51 @@ Containing:
 
 ### cell.py
 
-Problem paramters and plotter
+Module with problem parameters and plotter. Run this to view the geometry and a single ray.
+
+### fsr.py
+
+Module for Flat Source Regions.
 
 ### ray.py
 
-Ray tracer
+Module containing the ray tracer.
 
 ### trackgenerator.py
 
-Generator for cyclic tracks. Run this to view them.
+Module with a generator for cyclic tracks. Run this to view them.
 
 ### quadrature.py
 
-Tabuchi-Yamamoto quadrature generator
+Module with quadrature sets. 
+* Azimuthal: Equal angle
+* Polar: Uniform Distributed, Leonard's Optimum, Tabuchi-Yamamoto
 
 ### calculate.py
 
-Flux calculator. Currenly broken. Run this to be disappointed.
+Module containing the transport solver. Run this to get fuel and moderator fluxes.
 
 ### functions.py
 
-Module with a couple of generic math functions
+Module with a couple of generic functions
 
-### fluxmapping.py
+### area.py
 
-Deprecated, should probably be deleted
+Test out quadratures and check for spatial convergence by calculating the effective areas of FSRs.
+
+### angles.py
+
+Check for angular convergence by running an increasingly high number of azimuthal angles. SLOW.
+
+### ratios.py
+
+Test flux ratios as a function of source strength and region cross section.
+
+### prob1.py
+
+22.212/PSet03/Problem 1: Flux Ratios
+
+### prob2.py
+
+22.212/PSet03/Problem 2: Dancoff Factors
 
