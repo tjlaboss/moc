@@ -205,22 +205,13 @@ if __name__ == "__main__":
 		print()
 		print("-" * 60)
 		print("Fuel area")
-		print("\tActual: {:.6f}\tEffective: {:.6f}".format(cell.AREA_FUEL, calc.fuel_area_tally))
-		print("\tError: {:.4%}".format(errea(cell.AREA_FUEL, calc.fuel_area_tally)))
+		print("\tActual: {:.6f}\tEffective: {:.6f}".format(fuel_fsr.area, calc.fuel_area_tally))
+		print("\tError: {:.4%}".format(errea(fuel_fsr.area, calc.fuel_area_tally)))
 		print()
 		print("Moderator area")
-		print("\tActual: {:.6f}\tEffective: {:.6f}".format(cell.AREA_MOD, calc.modr_area_tally))
-		print("\tError: {:.4%}".format(errea(cell.AREA_MOD, calc.modr_area_tally)))
+		print("\tActual: {:.6f}\tEffective: {:.6f}".format(mod_fsr.area, calc.modr_area_tally))
+		print("\tError: {:.4%}".format(errea(mod_fsr.area, calc.modr_area_tally)))
 
-		# Wigner-Bell math!
-		'''
-		print("Fuel XS: {:.4f} cm^-1; \t Mod XS: {:.4f} cm^-1".format(cell.SIGMA_NF, sigma_a))
-		mkl = 2*cell.RADIUS		# mean Kord length
-		pff = mkl*cell.SIGMA_NF / (1 + mkl*cell.SIGMA_NF)
-		print("pff: {:.5f} \t 1 - pff: {:.5f}".format(pff, 1-pff))
-		ratio = sigma_a / cell.SIGMA_NF / (1/pff - 1)*cell.AREA_RATIO
-		print("Wigner prediction of flux ratio: {:.5f}".format(ratio))
-		'''
 		if PLOT:
 			pylab.show()
 

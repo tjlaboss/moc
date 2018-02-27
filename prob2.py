@@ -10,8 +10,8 @@ import quadrature
 import calculate
 import fsr
 
-AZIM_PAIRS = 16		# Half the number of azimuthal angles
-D_AZIM = 0.1		# Azimuthal ray spacing target
+AZIM_PAIRS = 128	# Half the number of azimuthal angles
+D_AZIM = 0.005		# Azimuthal ray spacing target
 PLOT = False		# Whether to plot the tracks
 EPS = 1E-5			# Numerical tolerance
 SIGMA_F = 0.1/EPS	# Fuel XS for Dancoff factors
@@ -26,7 +26,7 @@ report = """
 Problem 2:
 ----------"""
 fuel_fsr = fsr.FlatSourceRegion(AREA_FUEL, SIGMA_F, 1.0, "Fuel (Dancoff)")
-for sigma_a in SIGMA_AS[:]:
+for sigma_a in SIGMA_AS:
 	header = "Mod XS = {:.3f} cm^-1".format(sigma_a)
 	report += '\n\t' + header
 	mod_fsr = fsr.FlatSourceRegion(AREA_MOD, sigma_a, 0.0, "Moderator")
