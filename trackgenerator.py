@@ -2,7 +2,6 @@
 #
 # Class for the track laydown
 
-import cell
 import ray
 from functions import *
 import pylab
@@ -24,10 +23,15 @@ class TrackGenerator(object):
 	Attributes:
 	-----------
 	many, to be described
+	ntotal:            int; total number of nodes on x and y edges
 	"""
 	def __init__(self, cell_, nazim, dtarget):
 		self.cell = cell_
 		self.nazim = nazim
+		if self.cell.axis:
+			titext = "{} Azimuthal angles\t$\delta_\\varphi = {}$ cm".format(
+				2*nazim, dtarget)
+			self.cell.axis.set_title(titext, fontsize="14")
 		
 		n = nazim//2
 		
@@ -58,9 +62,10 @@ class TrackGenerator(object):
 			self.dxs[i] = delta_x/self.nxs[i]
 			self.dys[i] = delta_y/self.nys[i]
 			self.dazim[i] = self.dxs[i]*math.sin(phi_eff)
+		self.ntotal = 2 * (self.nxs.sum() + self.nys.sum())
 		
-		#print("Angles:", [round(deg(ang)) for ang in self.phis])
-		self._tracks = []  # TODO: Initialize as list of the right length
+		#print("Angles:", [round(deg(ang)) for ang in self.phis[0,:]])
+		self._tracks = []
 		# Integrate nxs, nys
 		for i in range(1, n):
 			self.integral_nxs[i] = self.nxs[:i].sum()
@@ -71,7 +76,8 @@ class TrackGenerator(object):
 		self.track_phis = dict()    # key = phi
 		#
 		self.__flux_index = -1
-	
+		self.generated = False
+
 	def _increment(self):
 		self.__flux_index += 1
 		return self.__flux_index
@@ -147,31 +153,21 @@ class TrackGenerator(object):
 		i = (self.cell.xmax + x)/dx  # - 0.5
 		return math.floor(i)
 	
-	def _track_by_quadrant(self, x, y, phi, phindex):
-		"""Temporary function used for debugging ray spacing
-		
-		This used to give different parameters to rays, but now
-		it has been simplified. At this point, it's just a wrapper
-		for Ray() creation and plotting.
+	def _new_track(self, x, y, phi, phindex):
+		"""Wrapper for Ray() creation and plotting.
+
+		Parameters:
+		-----------
+		x:			float, cm; x0 of the new ray
+		y:			float, cm; y0 of the new ray
+		phi:		float, radians; azimuthal angle
+		phindex:	int; azimuthal index
 		"""
 		track = ray.Ray(x, y, phi, phindex, self.cell)
-		
-		# Plotting, dbug
-		if track is not None:
-			#phideg = int(180*phi/math.pi)
-			#print("({}, {}) to ({:.2}, {:.2}) @ {} deg".format(track.x0, track.y0, track.x1, track.y1, phideg))
-			
-			# TODO: Turn this off. Plots should be done as part of track.trace()
-			dists = track.trace()
-			
-			self.cell.plot_track(track, dists)
-			
-			if DEBUG:
-				pylab.show()
-				self.cell.figure, self.cell.axis = self.cell._set_plot()
-		
+		dists = track.trace()
+		self.cell.plot_track(track, dists)
 		return track
-			
+
 	
 	def _add_track_to_dict(self, track):
 		"""Use a track's starting and stopping coordinates as keys
@@ -251,7 +247,7 @@ class TrackGenerator(object):
 				b = 1*(not b)
 			phi = self.phis[b, a]*d
 			#print("x0: {:.2f}\ty0: {:.2f}\tphi: {}".format(x, y, round(deg(phi))))
-			track = self._track_by_quadrant(x, y, phi, a)
+			track = self._new_track(x, y, phi, a)
 			track.last_track = old_track
 			old_track.next_track = track
 			track.index0 = self._increment()
@@ -264,42 +260,68 @@ class TrackGenerator(object):
 		track.next_track = track0
 		track0.last_track = track
 		return count, yleft
-	
-	def generate(self):
-		"""Actually live up to its name and make the tracks"""
+
+	def generate(self, plot_each_cycle=False):
+		"""Actually live up to its name and make the tracks
+
+		Algorithm:
+		----------
+		We know the number of angles per edge and the required spacing
+		from the correction calculations in __init__(). Therefore, we know
+		where all the endpoints of the tracks need to be. By following
+		reflection logic, we can start a track at one of the required
+		locations and follow it until it returns to its starting coordinates.
+		For some special angles	(e.g., 90 degrees), the cycle will terminate
+		before all required sites have been hit. Then, start a new cycle
+		at the next unused site.
+
+		For most problems, this function is responsible for most of the runtime.
+
+		Parameter:
+		----------
+		plot_each_cycle:		Boolean, optional; whether to plot the complete
+								cycle of tracks for each azimuthal angle.
+								Useful for debugging.
+								[Default: False]
+		"""
 		print("Generating tracks...")
-		for a in range(self.nazim//2):
+		for a in range(self.nazim // 2):
 			dy = self.dys[a]
 			ny = self.nys[a]
-			
+
 			count0 = 0
 			yused_xmin = set()
-			nxy = 2*(self.nxs[a] + self.nys[a])
+			nxy = 2 * (self.nxs[a] + self.nys[a])
 			x00 = self.cell.xmin
-			
+
 			for n in range(ny):
-				y00 = self.cell.ymax - (0.5 + n)*dy
+				y00 = self.cell.ymax - (0.5 + n) * dy
 				if not is_used(y00, yused_xmin) and count0 < nxy:
 					b = 0
 					phi = self.phis[b, a]
-					if True:
-						print("X00: {:.2f}\tY00: {:.2f}\tphi: {}".format(x00, y00, round(deg(phi))))
-					track00 = self._track_by_quadrant(x00, y00, phi, a)
+					track00 = self._new_track(x00, y00, phi, a)
 					track00.index0 = self._increment()
 					self._add_track_to_dict(track00)
 					count1, ynew = self._cycle_track(track00, a, b)
 					count0 += count1
 					yused_xmin.update(ynew)
-				
 			if count0 != nxy:
 				warn("Wrong number of tracks ({} out of {})".format(count0, nxy))
-			
+			if self.cell.figure and plot_each_cycle:
+				# Plot the full cycle for this azimuthal angle
+				pylab.tight_layout()
+				pylab.show()
+				self.cell.figure, self.cell.axis = self.cell._set_plot()
+
 		print("...done.\n")
+		self.generated = True
 
 					
 if __name__ == "__main__":
 	# test
-	t = TrackGenerator(cell.test_cell, 12, dtarget = .25)
+	import cell as c
+	test_cell = c.Cell(c.PITCH, c.RADIUS, None, None)
+	t = TrackGenerator(test_cell, 4, dtarget = .25)
 	t.generate()
 	if not DEBUG:
 		pylab.show()

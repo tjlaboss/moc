@@ -4,7 +4,7 @@
 
 import warnings
 from functions import octant
-from pylab import sqrt, sin, cos, tan
+from math import sin, cos, tan, sqrt
 from decimal import Decimal
 
 D = 4   # Number of decimal places to round to
@@ -70,6 +70,7 @@ class Ray(object):
 			self.length = 0
 		self.key0 = (dround(self.x0, D), dround(self.y0, D))
 		self.key1 = (dround(self.x1, D), dround(self.y1, D))
+		self.s1, self.sf, self.s2 = self._trace()
 	
 	def __str__(self):
 		rep = "Ray:"
@@ -280,13 +281,27 @@ class Ray(object):
 			warnings.warn(errstr)
 			return forward*self.length
 	
-	def trace(self, forward = True):
+	def _trace(self, forward = True):
+		"""Calculate the distance to collision"""
 		# s1: distance before fuel pin
 		s1 = self.get_dist_to_collision(forward)
 		# s2: distance after fuel pin
 		s2 = self.get_dist_to_collision(not forward)
 		# sf: distance in fuel pin
 		sf = self.length - s2 - s1
-		# print("S1={:.3}; S2={:.3}; Sf={:.3};\tlength={:.3}".format(s1, s2, sf, self.length))
 		return s1, sf, s2
+
+	def trace(self, forward = True):
+		"""Get the distance to collision.
+
+		Parameter:
+		----------
+		forward:		Boolean, optional; whether to trace the ray forward.
+						If false, will trace it backward.
+						[Default: True]
+		"""
+		segments = [self.s1, self.sf, self.s2]
+		if not forward:
+			segments.reverse()
+		return segments
 
